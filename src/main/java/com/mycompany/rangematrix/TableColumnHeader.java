@@ -12,7 +12,6 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import javax.swing.JComponent;
-import javax.swing.UIManager;
 
 /**
  *
