@@ -17,7 +17,7 @@ public class TableApp extends JFrame {
     
     public TableApp() {
         super("Таблица");
-        MultilevelTable t = new MultilevelTable(new Model());
+        TableColumnHeader t = new TableColumnHeader(new Model());
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setVisible(true);
         this.add(t);

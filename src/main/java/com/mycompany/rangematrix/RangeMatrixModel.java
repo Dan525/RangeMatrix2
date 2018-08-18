@@ -22,21 +22,9 @@ public interface RangeMatrixModel {
     
     Object getColumnGroup(Object parent, int index);
     
-    int getColumnIndex(Object parent, Object child);
-    
     boolean isColumnGroup(Object column);
     
     String getColumnGroupName(Object column);
-    
-    //Column
-    
-    int getColumnCount(Object columnGroup);
-    
-    Object getColumn(Object columnGroup,int index);
-    
-    String getColumnName(Object columnGroup,int index);
-    
-    List<Object> getColumnPath(Object column);
     
     //Row Group
     

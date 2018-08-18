@@ -33,29 +33,17 @@ public class Model implements RangeMatrixModel {
     @Override
     public int getColumnGroupCount(Object column) {
         if (column == null) {
-            return 0;
+            return new File("C:\\Источник сигнала").list().length;
         }
         return ((File)column).list().length;
     }
 
     @Override
     public Object getColumnGroup(Object column, int index) {
-        return ((File)column).listFiles()[index];
-    }
-
-    @Override
-    public int getColumnIndex(Object parent, Object child) {
-        File[] childrenFiles = ((File)parent).listFiles();
-            if (childrenFiles == null) {
-                return -1;
-            }
-        String childName = ((File)child).getPath();
-        for (int i = 0; i < childrenFiles.length; i++) {
-            if (childName.equals(childrenFiles[i].getPath())) {
-                return i;
-            }
+        if (column == null) {
+            return new File("C:\\Источник сигнала").listFiles()[index];
         }
-        return -1;
+        return ((File)column).listFiles()[index];
     }
     
     @Override
@@ -70,29 +58,6 @@ public class Model implements RangeMatrixModel {
     @Override
     public String getColumnGroupName(Object column) {
         return ((File)column).getName();
-    }
-
-    @Override
-    public int getColumnCount(Object columnGroup) {
-        if (columnGroup == null) {
-            return 0;
-        }
-        return ((File)columnGroup).list().length;
-    }
-
-    @Override
-    public Object getColumn(Object columnGroup,int index) {
-        return ((File)columnGroup).listFiles()[index];
-    }
-
-    @Override
-    public String getColumnName(Object columnGroup,int index) {
-        return ((File)columnGroup).getName();
-    }
-
-    @Override
-    public List<Object> getColumnPath(Object column) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override

@@ -16,19 +16,19 @@ import javax.swing.UIManager;
 
 /**
  *
- * @author daniil_pozdeev
+ * @author Daniil
  */
-public class MultilevelTable extends JComponent {
+public class TableRowHeader extends JComponent {
 
     private RangeMatrixModel model;
     private Graphics2D g2d;
     private FontMetrics fm;
 
-    public MultilevelTable(RangeMatrixModel model) {
+    public TableRowHeader(RangeMatrixModel model) {
         init(model);
     }
 
-    MultilevelTable() {
+    TableRowHeader() {
 
     }
 
@@ -97,9 +97,11 @@ public class MultilevelTable extends JComponent {
 
     public float getWidthOfColumn(Object column, FontMetrics fm) {
         float columnWidth = 0;
-        ArrayList<Object> leafColumnList = getLeafColumns(column, new ArrayList<Object>());
-        if (leafColumnList.size() == 0) {
-            return fm.stringWidth(model.getColumnGroupName(column)) + 2 * spaceAroundName;
+        float ownColumnWidth = fm.stringWidth(model.getColumnGroupName(column)) + 2 * spaceAroundName;
+        
+        ArrayList<Object> leafColumnList = getLeafColumns(column, new ArrayList<>());
+        if (leafColumnList.isEmpty()) {
+            return ownColumnWidth;
         }
         for (Object leafColumn : leafColumnList) {
             float leafColumnWidth = getWidthOfColumnName(leafColumn, fm);
@@ -107,62 +109,28 @@ public class MultilevelTable extends JComponent {
         }
         return columnWidth;
     }
-
-    public ArrayList<Object> getColumnBrothers(Object parentColumn, ArrayList<Object> columnBrothersList) {
-        int columnCount = model.getColumnGroupCount(parentColumn);
-
-        for (int i = 0; i < columnCount; i++) {
-            Object child = model.getColumnGroup(parentColumn, i);
-            columnBrothersList.add(child);
-        }
-        return columnBrothersList;
-    }
     
-    public int getMaxRowIndex(Object parentColumn, int maxRowIndex) {
+    public int getMaxRowIndex(Object parentColumn, ArrayList<Integer> maxRowIndexList,int maxRowIndex) {
         int columnCount = model.getColumnGroupCount(parentColumn);
-        ArrayList<Integer> maxRowIndexList = new ArrayList<>();
         
         for (int i = 0; i < columnCount; i++) {            
             Object child = model.getColumnGroup(parentColumn, i);
             boolean isGroup = model.isColumnGroup(child);
             if (isGroup) {
                 maxRowIndex++;
-                getRowIndex(child, maxRowIndex);
+                getMaxRowIndex(child, maxRowIndexList, maxRowIndex);
                 maxRowIndex++;
-                maxRowIndexList.add(maxRowIndex);
+                
             }
+            maxRowIndexList.add(maxRowIndex);
             maxRowIndex = 0;
         }
         return Collections.max(maxRowIndexList);
     }
 
-    public int getRowIndex(Object columnBrother, int countOfGenerations) {
-        int columnCount = model.getColumnGroupCount(columnBrother);
-
-        for (int i = 0; i < columnCount; i++) {
-            Object child = model.getColumnGroup(columnBrother, i);
-            boolean isGroup = model.isColumnGroup(child);
-            if (isGroup) {
-                countOfGenerations++;
-                getRowIndex(child, countOfGenerations);
-                countOfGenerations++;
-            }
-        }
-        return countOfGenerations;
-    }
-
     public int getHeightMultiplier(Object parentColumn, boolean isGroup, int rowIndex, int maxRowIndex) {
         if (!isGroup) {
-//            ArrayList<Object> columnBrothersList = getColumnBrothers(parentColumn, new ArrayList<Object>());
-//            ArrayList<Integer> countOfGenerationsList = new ArrayList<>();
-//
-//            for (Object columnBrother : columnBrothersList) {
-//                int countOfGenerations = getCountOfGenerations(columnBrother, 0);
-//                countOfGenerationsList.add(countOfGenerations);
-//            }
-            
-            //return 1 + Collections.max(countOfGenerationsList);
-            return (4 - rowIndex) + 1;
+            return (maxRowIndex - rowIndex) + 1;
         } else {
             return 1;
         }
@@ -249,11 +217,10 @@ public class MultilevelTable extends JComponent {
 
         g2d = (Graphics2D) g;
         fm = g2d.getFontMetrics();
+        
+        int maxRowIndex = getMaxRowIndex(null, new ArrayList<>(), 0);
 
-        Object parentColumn = ((Model) model).getColumnRoot();
-        int maxGeneration = getMaxRowIndex(parentColumn, 0);
-
-        drawColumns(parentColumn, 0, 0, 0, maxGeneration);
+        drawColumns(null, 0, 0, 0, maxRowIndex);
 //        Object parentRow = ((Model)model).getRowRoot();
 //        float parentCellHeight = getHeight() - lowestPointHeader;
 //        float cellWidth = 100;
