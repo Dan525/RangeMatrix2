@@ -19,7 +19,7 @@ import javax.swing.JComponent;
  */
 public class TableColumnHeader extends JComponent {
 
-    private RangeMatrixModel model;
+    private final RangeMatrixModel model;
     private Graphics2D g2d;
     private FontMetrics fm;
     private float spaceAroundName = 4;
