@@ -119,11 +119,9 @@ public class TableRowHeader extends JComponent {
             if (isGroup) {
                 maxRowIndex++;
                 getMaxRowIndex(child, maxRowIndexList, maxRowIndex);
-                maxRowIndex++;
-                
+                maxRowIndex--;                
             }
             maxRowIndexList.add(maxRowIndex);
-            maxRowIndex = 0;
         }
         return Collections.max(maxRowIndexList);
     }

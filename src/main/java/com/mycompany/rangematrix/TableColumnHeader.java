@@ -26,12 +26,8 @@ public class TableColumnHeader extends JComponent {
     private float spaceAroundName = 4;
 
     public TableColumnHeader(RangeMatrixModel model) {
-        init(model);
-    }
-
-    private void init(RangeMatrixModel model) {
         this.model = model;
-    }    
+    }
 
     public RangeMatrixModel getModel() {
         return model;
