@@ -19,7 +19,7 @@ public class Model implements RangeMatrixModel {
     
     Model() {
         this.columnRoot = new File("C:\\Источники сигнала");
-        this.rowRoot = new File("C:\\Источники сигнала\\Плата 1");
+        this.rowRoot = new File("C:\\Источники сигнала");
     }
     
     public Object getColumnRoot() {
@@ -57,19 +57,25 @@ public class Model implements RangeMatrixModel {
 
     @Override
     public String getColumnGroupName(Object column) {
+        if (column == null) {
+            return new File("C:\\Источник сигнала").getName();
+        }
         return ((File)column).getName();
     }
 
     @Override
     public int getRowGroupCount(Object row) {
         if (row == null) {
-            return 0;
+            return new File("C:\\rows").list().length;
         }
         return ((File)row).list().length;
     }
 
     @Override
     public Object getRowGroup(Object row, int index) {
+        if (row == null) {
+            return new File("C:\\rows").listFiles()[index];
+        }
         return ((File)row).listFiles()[index];
     }
 

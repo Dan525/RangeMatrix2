@@ -5,6 +5,7 @@
  */
 package com.mycompany.rangematrix;
 
+import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -55,21 +56,22 @@ public class TableColumnHeader extends JComponent {
         return (fm.getHeight() + 2 * spaceAroundName) * heightMultiplier;
     }
 
-    public float getWidthOfColumnName(Object column, FontMetrics fm) {
+    public float getWidthOfColumnName(Object column) {
         String columnName = model.getColumnGroupName(column);
         return fm.stringWidth(columnName) + 2 * spaceAroundName;
     }
 
-    public float getWidthOfColumn(Object column, FontMetrics fm) {
+    public float getWidthOfColumn(Object column) {
         float columnWidth = 0;
-        float ownColumnWidth = fm.stringWidth(model.getColumnGroupName(column)) + 2 * spaceAroundName;
+        String name = model.getColumnGroupName(column);
+        float ownColumnWidth = fm.stringWidth(name) + 2 * spaceAroundName;
         
         ArrayList<Object> leafColumnList = getLeafColumns(column, new ArrayList<>());
         if (leafColumnList.isEmpty()) {
             return ownColumnWidth;
         }
         for (Object leafColumn : leafColumnList) {
-            float leafColumnWidth = getWidthOfColumnName(leafColumn, fm);
+            float leafColumnWidth = getWidthOfColumnName(leafColumn);
             columnWidth += leafColumnWidth;
         }
         return columnWidth;
@@ -108,7 +110,7 @@ public class TableColumnHeader extends JComponent {
             Object child = model.getColumnGroup(parentColumn, i);
             String columnName = model.getColumnGroupName(child);
 
-            float cellWidth = getWidthOfColumn(child, fm);
+            float cellWidth = getWidthOfColumn(child);
 
             boolean isGroup = model.isColumnGroup(child);
 
@@ -132,6 +134,15 @@ public class TableColumnHeader extends JComponent {
             cellX += cellWidth;            
         }
     }
+    
+    @Override
+    public Dimension getPreferredSize() {
+        g2d = (Graphics2D) getGraphics();
+        fm = g2d.getFontMetrics();
+        float width = getWidthOfColumn(null);
+        float height = getCellHeight(1) * getMaxRowIndex(null, new ArrayList<Integer>(), 1)+20;
+        return new Dimension((int)width, (int)height);
+    }
 
     @Override
     public void paintComponent(Graphics g) {
@@ -143,4 +154,6 @@ public class TableColumnHeader extends JComponent {
 
         drawColumns(null, 0, 0, 0, maxRowIndex);
     }
+    
+    
 }

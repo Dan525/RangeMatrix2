@@ -65,19 +65,19 @@ public class TableRowHeader extends JComponent {
         }
     }
 
-    public ArrayList<Object> getLeafColumns(Object parentColumn, ArrayList<Object> leafColumnList) {
-        int columnCount = model.getColumnGroupCount(parentColumn);
+    public ArrayList<Object> getLeafRows(Object parentRow, ArrayList<Object> leafRowList) {
+        int rowCount = model.getRowGroupCount(parentRow);
 
-        for (int i = 0; i < columnCount; i++) {
-            Object child = model.getColumnGroup(parentColumn, i);
-            boolean isGroup = model.isColumnGroup(child);
+        for (int i = 0; i < rowCount; i++) {
+            Object child = model.getRowGroup(parentRow, i);
+            boolean isGroup = model.isRowGroup(child);
             if (isGroup) {
-                getLeafColumns(child, leafColumnList);
+                getLeafRows(child, leafRowList);
             } else {
-                leafColumnList.add(child);
+                leafRowList.add(child);
             }
         }
-        return leafColumnList;
+        return leafRowList;
     }
 
     float spaceAroundName = 4;
@@ -90,66 +90,71 @@ public class TableRowHeader extends JComponent {
         return (fm.getHeight() + 2 * spaceAroundName) * heightMultiplier;
     }
 
-    public float getWidthOfColumnName(Object column, FontMetrics fm) {
-        String columnName = model.getColumnGroupName(column);
-        return fm.stringWidth(columnName) + 2 * spaceAroundName;
-    }
-
-    public float getWidthOfColumn(Object column, FontMetrics fm) {
-        float columnWidth = 0;
-        float ownColumnWidth = fm.stringWidth(model.getColumnGroupName(column)) + 2 * spaceAroundName;
-        
-        ArrayList<Object> leafColumnList = getLeafColumns(column, new ArrayList<>());
-        if (leafColumnList.isEmpty()) {
-            return ownColumnWidth;
-        }
-        for (Object leafColumn : leafColumnList) {
-            float leafColumnWidth = getWidthOfColumnName(leafColumn, fm);
-            columnWidth += leafColumnWidth;
-        }
-        return columnWidth;
+    public float getWidthOfRowByName(Object row, FontMetrics fm) {
+        String rowName = model.getRowGroupName(row);
+        return fm.stringWidth(rowName) + 2 * spaceAroundName;
     }
     
-    public int getMaxRowIndex(Object parentColumn, ArrayList<Integer> maxRowIndexList,int maxRowIndex) {
-        int columnCount = model.getColumnGroupCount(parentColumn);
-        
-        for (int i = 0; i < columnCount; i++) {            
-            Object child = model.getColumnGroup(parentColumn, i);
+    public float getWidthOfRow(int indexOfColumn, int columnCounter, ArrayList<Float> rowsOfColumnList) {
+        int rowCount = model.getRowGroupCount(null);
+
+        for (int i = 0; i < rowCount; i++) {
+            Object child = model.getRowGroup(null, i);
+
             boolean isGroup = model.isColumnGroup(child);
-            if (isGroup) {
-                maxRowIndex++;
-                getMaxRowIndex(child, maxRowIndexList, maxRowIndex);
-                maxRowIndex--;                
-            }
-            maxRowIndexList.add(maxRowIndex);
+
+            if (isGroup && columnCounter < indexOfColumn) {
+                columnCounter++;
+                getWidthOfRow(indexOfColumn, columnCounter, rowsOfColumnList);
+                columnCounter--;
+                
+            } else if (columnCounter == indexOfColumn) {
+                rowsOfColumnList.add(getWidthOfRowByName(child, fm));
+            }         
         }
-        return Collections.max(maxRowIndexList);
+        return Collections.max(rowsOfColumnList);
     }
 
-    public int getHeightMultiplier(Object parentColumn, boolean isGroup, int rowIndex, int maxRowIndex) {
-        if (!isGroup) {
-            return (maxRowIndex - rowIndex) + 1;
+    public float getHeightOfRow(Object row, FontMetrics fm) {
+        ArrayList<Object> leafRowList = getLeafRows(row, new ArrayList<>());
+        if (leafRowList.isEmpty()) {
+            return getCellHeight(1);
         } else {
-            return 1;
+            return getCellHeight(leafRowList.size());
         }
     }
+    
+    public int getMaxColumnIndex(Object parentRow, ArrayList<Integer> maxColumnIndexList,int maxColumnIndex) {
+        int rowCount = model.getRowGroupCount(parentRow);
+        
+        for (int i = 0; i < rowCount; i++) {            
+            Object child = model.getRowGroup(parentRow, i);
+            boolean isGroup = model.isRowGroup(child);
+            if (isGroup) {
+                maxColumnIndex++;
+                getMaxColumnIndex(child, maxColumnIndexList, maxColumnIndex);
+                maxColumnIndex--;                
+            }
+            maxColumnIndexList.add(maxColumnIndex);
+        }
+        return Collections.max(maxColumnIndexList);
+    }
+    
 
-    public void drawColumns(Object parentColumn, float parentCellX, float parentCellY, int rowCounter, int maxRowIndex) {
-        int columnCount = model.getColumnGroupCount(parentColumn);
+    public void drawRows(Object parentRow, float parentCellX, float parentCellY, int columnCounter) {
+        int rowCount = model.getRowGroupCount(parentRow);
         float cellX = parentCellX;
         float cellY = parentCellY;
 
-        for (int i = 0; i < columnCount; i++) {
-            Object child = model.getColumnGroup(parentColumn, i);
-            String columnName = model.getColumnGroupName(child);
+        for (int i = 0; i < rowCount; i++) {
+            Object child = model.getRowGroup(parentRow, i);
+            String columnName = model.getRowGroupName(child);
 
-            float cellWidth = getWidthOfColumn(child, fm);
+            float cellWidth = 100;//getWidthOfRow(columnCounter, 1, new ArrayList<Float>());
 
             boolean isGroup = model.isColumnGroup(child);
 
-            int heightMultiplier = getHeightMultiplier(parentColumn, isGroup, rowCounter, maxRowIndex);
-
-            float cellHeight = getCellHeight(heightMultiplier);
+            float cellHeight = getHeightOfRow(child, fm);
             
             setLowestPoint(cellY, cellHeight);
 
@@ -160,42 +165,13 @@ public class TableRowHeader extends JComponent {
                     cellY + cellHeight / 2 - fm.getHeight() / 2 + 12);        //12 - высота верхней панели окна
 
             if (isGroup) {
-                rowCounter++;
-                cellY += cellHeight;
-                drawColumns(child, cellX, cellY, rowCounter, maxRowIndex);
-                rowCounter--;
-                cellY -= cellHeight;
-            }            
-            cellX += cellWidth;            
-        }
-    }
-
-    public void drawRows(Object parentRow, float parentCellY, float parentCellHeight, float cellWidth) {
-
-        int rowCount = model.getRowGroupCount(parentRow);
-
-        for (int i = 0; i < rowCount; i++) {
-            Object child = model.getRowGroup(parentRow, i);
-            String rowName = model.getRowGroupName(child);
-
-            float cellHeight = parentCellHeight / (rowCount);
-            float cellX = columnCounter * cellWidth;
-            float cellY = parentCellY + i * cellHeight;
-
-            Rectangle2D rect = new Rectangle2D.Float(cellX, cellY, cellWidth, cellHeight);
-            g2d.draw(rect);
-            g2d.drawString(rowName, cellX + cellWidth / 2 - fm.stringWidth(rowName) / 2, cellY + 15);
-
-            boolean isGroup = model.isRowGroup(child);
-            if (isGroup) {
                 columnCounter++;
-                drawRows(child, cellY, cellHeight, cellWidth);
+                cellX += cellWidth;
+                drawRows(child, cellX, cellY, columnCounter);
                 columnCounter--;
-            } else {
-                g2d.drawLine((int) sidePanelWidth, (int) cellY, getWidth(), (int) cellY);
-                cellYList.add(cellY);
-                cellHeightList.add(cellHeight);
-            }
+                cellX -= cellWidth;
+            }            
+            cellY += cellHeight;            
         }
     }
 
@@ -215,18 +191,8 @@ public class TableRowHeader extends JComponent {
 
         g2d = (Graphics2D) g;
         fm = g2d.getFontMetrics();
-        
-        int maxRowIndex = getMaxRowIndex(null, new ArrayList<>(), 0);
 
-        drawColumns(null, 0, 0, 0, maxRowIndex);
-//        Object parentRow = ((Model)model).getRowRoot();
-//        float parentCellHeight = getHeight() - lowestPointHeader;
-//        float cellWidth = 100;
-//        
-//        
-//        drawRows(parentRow, fm, g2d, lowestPointHeader, parentCellHeight, cellWidth);
-//        
-//        drawValues(fm, g2d);
+        drawRows(null, 0, 0, 1);
 
     }
 }

@@ -5,6 +5,8 @@
  */
 package com.mycompany.rangematrix;
 
+import java.awt.BorderLayout;
+import java.awt.Container;
 import java.awt.Dimension;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
@@ -17,11 +19,17 @@ public class TableApp extends JFrame {
     
     public TableApp() {
         super("Таблица");
-        TableColumnHeader t = new TableColumnHeader(new Model());
+        TableColumnHeader columns = new TableColumnHeader(new Model());
+        TableRowHeader rows = new TableRowHeader(new Model());
+        JScrollPane columnScrollPane = new JScrollPane(columns);
+        columnScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setVisible(true);
-        this.add(t);
-        this.setSize(new Dimension(1000,600));
+        Container c = this.getContentPane();
+        c.setLayout(new BorderLayout());
+        c.add(columnScrollPane, BorderLayout.NORTH);
+        c.add(rows, BorderLayout.CENTER);
+        pack();
     }
     
 }
